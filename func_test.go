@@ -53,3 +53,8 @@ func TestTryFunc(t *testing.T) {
 	numTry = 8
 	assert.Error(t, TryFunc(numTry, fn))
 }
+
+func TestFileLoad(t *testing.T) {
+	_, err := FileLoad("./testhelper/test.txt")
+	assert.NoError(t, err)
+}

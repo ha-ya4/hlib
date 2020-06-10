@@ -1,5 +1,10 @@
 package hlib
 
+import (
+	"io/ioutil"
+	"os"
+)
+
 // TryFuncCount numTryで指定した回数fnを実行する。fnが成功したらその時点でfnを実行した回数とnilをリターンする
 func TryFuncCount(numTry int, fn func(count int) error) (int, error) {
 	var err error
@@ -29,4 +34,16 @@ func TryFuncCount(numTry int, fn func(count int) error) (int, error) {
 func TryFunc(numTry int, fn func(count int) error) error {
 	_, err := TryFuncCount(numTry, fn)
 	return err
+}
+
+// FileLoad 引数で指定したファイルを読み込んで[]byteで返す
+func FileLoad(path string) (b []byte, err error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return []byte{}, err
+	}
+	defer func() {
+		err = file.Close()
+	}()
+	return ioutil.ReadAll(file)
 }
