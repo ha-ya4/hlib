@@ -49,8 +49,8 @@ func FileLoad(path string) (b []byte, err error) {
 	return ioutil.ReadAll(file)
 }
 
-// UnmarshalFromFile ファイルを読み込み引数vへunmarshalする
-func UnmarshalFromFile(path string, v interface{}) error {
+// JSONUnmarshalFromFile ファイルを読み込み引数vへunmarshalする
+func JSONUnmarshalFromFile(path string, v interface{}) error {
 	b, err := FileLoad(path)
 	if err != nil {
 		return err

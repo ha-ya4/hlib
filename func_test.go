@@ -59,7 +59,7 @@ func TestFileLoad(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestUnmarshalFromFile(t *testing.T) {
+func TestJSONUnmarshalFromFile(t *testing.T) {
 	st := struct {
 		Text string `json:text`
 	}{}
