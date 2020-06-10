@@ -1,6 +1,7 @@
 package hlib
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"os"
 )
@@ -46,4 +47,13 @@ func FileLoad(path string) (b []byte, err error) {
 		err = file.Close()
 	}()
 	return ioutil.ReadAll(file)
+}
+
+// UnmarshalFromFile ファイルを読み込み引数vへunmarshalする
+func UnmarshalFromFile(path string, v interface{}) error {
+	b, err := FileLoad(path)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(b, v)
 }

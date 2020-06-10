@@ -55,6 +55,14 @@ func TestTryFunc(t *testing.T) {
 }
 
 func TestFileLoad(t *testing.T) {
-	_, err := FileLoad("./testhelper/test.txt")
+	_, err := FileLoad("./testhelper/test.json")
+	assert.NoError(t, err)
+}
+
+func TestUnmarshalFromFile(t *testing.T) {
+	st := struct {
+		Text string `json:text`
+	}{}
+	err := UnmarshalFromFile("./testhelper/test.json", &st)
 	assert.NoError(t, err)
 }
