@@ -2,10 +2,23 @@ package hlib
 
 import (
 	"errors"
+	"fmt"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func TestMain(m *testing.M) {
+	code := m.Run()
+
+	err := os.Remove("./testhelper/test.json")
+	if err != nil {
+		fmt.Println("err" + err.Error())
+	}
+
+	os.Exit(code)
+}
 
 func TestTryFuncCount(t *testing.T) {
 	successCount := 10
@@ -54,6 +67,21 @@ func TestTryFunc(t *testing.T) {
 	assert.Error(t, TryFunc(numTry, fn))
 }
 
+var testSt = struct {
+	Text string   `json:"text"`
+	Num  int      `json:"num"`
+	List []string `json:"list"`
+}{
+	Text: "hello!",
+	Num:  100,
+	List: []string{"go", "js", "rust"},
+}
+
+func TestWriteFileJSONPretty(t *testing.T) {
+	err := WriteFileJSONPretty(testSt, "./testhelper/test.json", 0777)
+	assert.NoError(t, err)
+}
+
 func TestFileLoad(t *testing.T) {
 	_, err := FileLoad("./testhelper/test.json")
 	assert.NoError(t, err)
@@ -61,8 +89,11 @@ func TestFileLoad(t *testing.T) {
 
 func TestJSONUnmarshalFromFile(t *testing.T) {
 	st := struct {
-		Text string `json:text`
+		Text string   `json:"text"`
+		Num  int      `json:"num"`
+		List []string `json:"list"`
 	}{}
-	err := UnmarshalFromFile("./testhelper/test.json", &st)
+	err := JSONUnmarshalFromFile("./testhelper/test.json", &st)
 	assert.NoError(t, err)
+	assert.Exactly(t, testSt, st)
 }

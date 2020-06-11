@@ -1,6 +1,7 @@
 package hlib
 
 import (
+	"bytes"
 	"encoding/json"
 	"io/ioutil"
 	"os"
@@ -43,9 +44,7 @@ func FileLoad(path string) (b []byte, err error) {
 	if err != nil {
 		return []byte{}, err
 	}
-	defer func() {
-		err = file.Close()
-	}()
+	defer file.Close()
 	return ioutil.ReadAll(file)
 }
 
@@ -56,4 +55,19 @@ func JSONUnmarshalFromFile(path string, v interface{}) error {
 		return err
 	}
 	return json.Unmarshal(b, v)
+}
+
+// WriteFileJSONPretty jsonを整形してファイルに書き込む
+func WriteFileJSONPretty(v interface{}, path string, perm os.FileMode) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	var buf bytes.Buffer
+	if err = json.Indent(&buf, b, "", "  "); err != nil {
+		return err
+	}
+
+	return ioutil.WriteFile(path, buf.Bytes(), perm)
 }
