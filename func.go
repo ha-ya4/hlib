@@ -7,14 +7,30 @@ import (
 	"os"
 )
 
-// TryFuncCount numTryで指定した回数fnを実行する。fnが成功したらその時点でfnを実行した回数とnilをリターンする
-func TryFuncCount(numTry int, fn func(count int) error) (int, error) {
+// Try 指定した回数 関数を実行するための構造体
+type Try struct {
+	next bool
+}
+
+// ForcedTermination TryFuncの指定回数を無視して強制終了させる
+func (try *Try) ForcedTermination() {
+	try.next = false
+}
+
+// Func numTryで指定した回数fnを実行する。fnが成功したらその時点でfnを実行した回数とnilをリターンする
+// Try.ForcedTermination()を呼び出すことで強制終了させることができる
+func (try *Try) Func(numTry int, fn func(count int) error) (int, error) {
 	var err error
 	var c int
+	// nextフィールドがfalseになっている可能性があるので必ず最初にtrueにしておく
+	try.next = true
 
-	for {
+	for try.next {
 		c++
 		err = fn(c)
+		if !try.next {
+			break
+		}
 		// ループ回数がnumTryと一致した場合ブレークする
 		if c == numTry {
 			break
@@ -32,25 +48,15 @@ func TryFuncCount(numTry int, fn func(count int) error) (int, error) {
 	return c, err
 }
 
-// TryFunc TryFuncCountを呼び出し返り値のfnが実行された回数を潰してエラーのみ返す。fnが実行された回数が必要ない場合に使う
-func TryFunc(numTry int, fn func(count int) error) error {
-	_, err := TryFuncCount(numTry, fn)
-	return err
-}
-
-// FileLoad 引数で指定したファイルを読み込んで[]byteで返す
-func FileLoad(path string) (b []byte, err error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return []byte{}, err
-	}
-	defer file.Close()
-	return ioutil.ReadAll(file)
+// TryFunc Try.Funcのショートカット。強制終了が必要なければこちらを使う
+func TryFunc(numTry int, fn func(count int) error) (int, error) {
+	try := &Try{}
+	return try.Func(numTry, fn)
 }
 
 // JSONUnmarshalFromFile ファイルを読み込み引数vへunmarshalする
 func JSONUnmarshalFromFile(path string, v interface{}) error {
-	b, err := FileLoad(path)
+	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		return err
 	}

@@ -20,7 +20,58 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestTryFuncCount(t *testing.T) {
+func TestTryFunc(t *testing.T) {
+	successCount := 10
+	// successCountと引数countが一致したときにnil（成功）を返す
+	fn := func(count int) error {
+		if successCount == count {
+			return nil
+		}
+		return errors.New("")
+	}
+
+	try := Try{}
+	var err error
+	var c int
+
+	// 指定回数に到達する前に関数が処理に成功した場合
+	numTry := 15
+	tryCount := 10
+	c, err = try.Func(numTry, fn)
+	assert.NoError(t, err)
+	assert.True(t, c == tryCount)
+
+	// 関数の処理が成功する前に指定回数に到達した場合
+	numTry = 8
+	tryCount = 8
+	c, err = try.Func(numTry, fn)
+	assert.Error(t, err)
+	assert.True(t, c == tryCount)
+}
+
+// Try.Funcが強制終了するか
+func TestForcedTermination(t *testing.T) {
+	successCount := 10
+	numTry := 10
+	tryCount := 2
+	try := Try{}
+	e := errors.New("ForcedTermination")
+
+	c, err := try.Func(numTry, func(count int) error {
+		if count == 2 {
+			try.ForcedTermination()
+			return e
+		}
+		if successCount == count {
+			return nil
+		}
+		return errors.New("")
+	})
+	assert.True(t, err.Error() == e.Error())
+	assert.True(t, c == tryCount)
+}
+
+func TestTryFuncShortCut(t *testing.T) {
 	successCount := 10
 	// successCountと引数countが一致したときにnil（成功）を返す
 	fn := func(count int) error {
@@ -36,35 +87,16 @@ func TestTryFuncCount(t *testing.T) {
 	// 指定回数に到達する前に関数が処理に成功した場合
 	numTry := 15
 	tryCount := 10
-	c, err = TryFuncCount(numTry, fn)
+	c, err = TryFunc(numTry, fn)
 	assert.NoError(t, err)
 	assert.True(t, c == tryCount)
 
 	// 関数の処理が成功する前に指定回数に到達した場合
 	numTry = 8
 	tryCount = 8
-	c, err = TryFuncCount(numTry, fn)
+	c, err = TryFunc(numTry, fn)
 	assert.Error(t, err)
 	assert.True(t, c == tryCount)
-}
-
-func TestTryFunc(t *testing.T) {
-	successCount := 10
-	// successCountと引数countが一致したときにnil（成功）を返す
-	fn := func(count int) error {
-		if successCount == count {
-			return nil
-		}
-		return errors.New("")
-	}
-
-	// 指定回数に到達する前に関数が処理に成功した場合
-	numTry := 15
-	assert.NoError(t, TryFunc(numTry, fn))
-
-	// 関数の処理が成功する前に指定回数に到達した場合
-	numTry = 8
-	assert.Error(t, TryFunc(numTry, fn))
 }
 
 var testSt = struct {
@@ -79,11 +111,6 @@ var testSt = struct {
 
 func TestWriteFileJSONPretty(t *testing.T) {
 	err := WriteFileJSONPretty(testSt, "./testhelper/test.json", 0777)
-	assert.NoError(t, err)
-}
-
-func TestFileLoad(t *testing.T) {
-	_, err := FileLoad("./testhelper/test.json")
 	assert.NoError(t, err)
 }
 
