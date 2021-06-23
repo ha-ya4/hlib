@@ -2,9 +2,9 @@ package hlib
 
 import (
 	"bytes"
-	"encoding/json"
-	"io/ioutil"
 	"os"
+
+	json "github.com/goccy/go-json"
 )
 
 // Try 指定した回数 関数を実行するための構造体
@@ -56,12 +56,16 @@ func TryFunc(numTry int, fn func(count int) error) (int, error) {
 
 // JSONUnmarshalFromFile ファイルを読み込み引数vへunmarshalする
 func JSONUnmarshalFromFile(path string, v interface{}) error {
-	b, err := ioutil.ReadFile(path)
+	b, err := os.ReadFile(path)
 	if err != nil {
 		return err
 	}
 	return json.Unmarshal(b, v)
 }
+
+var JSONIndext4 = "    "
+var JSONIndext2 = "  "
+var JSONIndent = JSONIndext4
 
 // WriteFileJSONPretty jsonを整形してファイルに書き込む
 func WriteFileJSONPretty(v interface{}, path string, perm os.FileMode) error {
@@ -71,9 +75,9 @@ func WriteFileJSONPretty(v interface{}, path string, perm os.FileMode) error {
 	}
 
 	var buf bytes.Buffer
-	if err = json.Indent(&buf, b, "", "  "); err != nil {
+	if err = json.Indent(&buf, b, "", JSONIndent); err != nil {
 		return err
 	}
 
-	return ioutil.WriteFile(path, buf.Bytes(), perm)
+	return os.WriteFile(path, buf.Bytes(), perm)
 }
